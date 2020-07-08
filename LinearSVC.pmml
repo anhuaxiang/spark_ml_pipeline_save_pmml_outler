@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_3" xmlns:data="http://jpmml.org/jpmml-model/InlineTable" version="4.3">
+	<Header>
+		<Application name="JPMML-SparkML" version="1.6.0"/>
+		<Timestamp>2020-07-01T04:13:22Z</Timestamp>
+	</Header>
+	<DataDictionary>
+		<DataField name="class" optype="categorical" dataType="string">
+			<Value value="2"/>
+			<Value value="4"/>
+		</DataField>
+		<DataField name="clump_thickness" optype="continuous" dataType="integer"/>
+		<DataField name="unif_cell_size" optype="continuous" dataType="integer"/>
+		<DataField name="unif_cell_shape" optype="continuous" dataType="integer"/>
+		<DataField name="marg_adhesion" optype="continuous" dataType="integer"/>
+		<DataField name="single_epith_cell_size" optype="continuous" dataType="integer"/>
+		<DataField name="bare_nuclei" optype="continuous" dataType="integer"/>
+		<DataField name="bland_chrom" optype="continuous" dataType="integer"/>
+		<DataField name="norm_nucleoli" optype="continuous" dataType="integer"/>
+		<DataField name="mitoses" optype="continuous" dataType="integer"/>
+	</DataDictionary>
+	<TransformationDictionary/>
+	<MiningModel functionName="classification">
+		<MiningSchema>
+			<MiningField name="class" usageType="target"/>
+			<MiningField name="clump_thickness"/>
+			<MiningField name="unif_cell_size"/>
+			<MiningField name="unif_cell_shape"/>
+			<MiningField name="marg_adhesion"/>
+			<MiningField name="single_epith_cell_size"/>
+			<MiningField name="bare_nuclei"/>
+			<MiningField name="bland_chrom"/>
+			<MiningField name="norm_nucleoli"/>
+			<MiningField name="mitoses"/>
+		</MiningSchema>
+		<Output>
+			<OutputField name="pmml(prediction)" optype="categorical" dataType="string" isFinalResult="false"/>
+			<OutputField name="prediction" optype="continuous" dataType="double" feature="transformedValue">
+				<MapValues outputColumn="data:output" dataType="double">
+					<FieldColumnPair field="pmml(prediction)" column="data:input"/>
+					<InlineTable>
+						<row>
+							<data:input>2</data:input>
+							<data:output>0</data:output>
+						</row>
+						<row>
+							<data:input>4</data:input>
+							<data:output>1</data:output>
+						</row>
+					</InlineTable>
+				</MapValues>
+			</OutputField>
+		</Output>
+		<Segmentation multipleModelMethod="modelChain" x-missingPredictionTreatment="returnMissing">
+			<Segment id="1">
+				<True/>
+				<RegressionModel functionName="regression">
+					<MiningSchema>
+						<MiningField name="clump_thickness"/>
+						<MiningField name="unif_cell_size"/>
+						<MiningField name="unif_cell_shape"/>
+						<MiningField name="marg_adhesion"/>
+						<MiningField name="single_epith_cell_size"/>
+						<MiningField name="bare_nuclei"/>
+						<MiningField name="bland_chrom"/>
+						<MiningField name="norm_nucleoli"/>
+						<MiningField name="mitoses"/>
+					</MiningSchema>
+					<Output>
+						<OutputField name="margin" optype="continuous" dataType="double" isFinalResult="false"/>
+						<OutputField name="transformedMargin" optype="continuous" dataType="double" feature="transformedValue" isFinalResult="false">
+							<Apply function="threshold">
+								<FieldRef field="margin"/>
+								<Constant dataType="double">0.5</Constant>
+							</Apply>
+						</OutputField>
+					</Output>
+					<RegressionTable intercept="-4.803861856301575">
+						<NumericPredictor name="clump_thickness" coefficient="0.33557215277546387"/>
+						<NumericPredictor name="unif_cell_size" coefficient="0.07306193859567849"/>
+						<NumericPredictor name="unif_cell_shape" coefficient="0.12518518590815808"/>
+						<NumericPredictor name="marg_adhesion" coefficient="0.1954550698454424"/>
+						<NumericPredictor name="single_epith_cell_size" coefficient="-0.015661646889547916"/>
+						<NumericPredictor name="bare_nuclei" coefficient="0.22083874844782217"/>
+						<NumericPredictor name="bland_chrom" coefficient="0.2497893377530445"/>
+						<NumericPredictor name="norm_nucleoli" coefficient="0.0857342664017597"/>
+						<NumericPredictor name="mitoses" coefficient="0.13597733069083748"/>
+					</RegressionTable>
+				</RegressionModel>
+			</Segment>
+			<Segment id="2">
+				<True/>
+				<RegressionModel functionName="classification">
+					<MiningSchema>
+						<MiningField name="class" usageType="target"/>
+						<MiningField name="transformedMargin"/>
+					</MiningSchema>
+					<RegressionTable intercept="0.0" targetCategory="4">
+						<NumericPredictor name="transformedMargin" coefficient="1.0"/>
+					</RegressionTable>
+					<RegressionTable intercept="0.0" targetCategory="2"/>
+				</RegressionModel>
+			</Segment>
+		</Segmentation>
+	</MiningModel>
+</PMML>
